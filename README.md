@@ -62,13 +62,18 @@ There's a known issue with the AnimatedGIF library: the `GIFPlayer.h` header fil
 ## Setup Instructions
 
 1. **Install Required Libraries** (see Library Installation Quirk above)
-2. **Configure Arduino IDE**:
+2. **Install LittleFS Uploader Plugin**: Download and install the [LittleFS Uploader Plugin](https://github.com/earlephilhower/arduino-littlefs-upload/releases) for Arduino IDE
+3. **Configure Arduino IDE**:
    - Select your ESP32 board variant
    - Set PSRAM to "OPI PSRAM"
-3. **Configure Pin Assignments**: Update `config.h` to match your board's LCD connections
-4. **Upload the Code** to your ESP32 board
-5. **Connect to WiFi**: The ESP32 will create an access point named "ESP32-GIF" (password: "upload123")
-6. **Open Web Interface**: Navigate to `http://192.168.4.1` in your browser
+4. **Configure Pin Assignments**: Update `config.h` to match your board's LCD connections
+5. **Upload the Code** to your ESP32 board
+6. **Upload LittleFS Data**:
+   - Press **Ctrl+Shift+P** to open the command palette
+   - Type "LittleFS" and select **"Upload LittleFS to Pico/ESP8266/ESP32"**
+   - This uploads the `data/` directory containing the web interface HTML file
+7. **Connect to WiFi**: The ESP32 will create an access point named "ESP32-GIF" (password: "upload123")
+8. **Open Web Interface**: Navigate to `http://192.168.4.1` in your browser
 
 ## Usage
 
