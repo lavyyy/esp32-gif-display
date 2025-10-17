@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ESP32 GIF Uploader</title>
+    <style>
+      body {
+        font-family: system-ui, Arial;
+        margin: 2rem;
+        max-width: 720px;
+      }
+      .card {
+        border: 1px solid #ccc;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+      }
+      input[type="file"] {
+        margin: 0.5rem 0;
+      }
+      code {
+        background: #f5f5f5;
+        padding: 0.2rem 0.3rem;
+        border-radius: 0.3rem;
+      }
+      .status {
+        background: #e8f5e8;
+        border: 1px solid #4caf50;
+        padding: 0.5rem;
+        border-radius: 0.3rem;
+        margin: 0.5rem 0;
+      }
+      .uploading {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #856404;
+      }
+      select {
+        margin: 0.5rem 0;
+        padding: 0.3rem;
+      }
+      button {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1rem;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 0.3rem;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .orientation-info {
+        font-size: 0.9em;
+        color: #666;
+        margin-top: 0.5rem;
+      }
+    </style>
+    <script>
+      function updateStatus() {
+        fetch("/status")
+          .then((response) => response.json())
+          .then((data) => {
+            const statusDiv = document.getElementById("status");
+            if (data.uploading) {
+              statusDiv.className = "status uploading";
+              statusDiv.innerHTML = "📤 Uploading GIF... Please wait";
+            } else {
+              statusDiv.className = "status";
+              statusDiv.innerHTML = "✅ Ready for upload";
+            }
+          })
+          .catch((err) => console.log("Status update failed:", err));
+      }
+
+      // update status every 2 seconds
+      setInterval(updateStatus, 2000);
+      updateStatus();
+    </script>
+  </head>
+  <body>
+    <h2>ESP32 GIF Uploader</h2>
+
+    <div id="status" class="status">✅ Ready for upload</div>
+
+    <div class="card">
+      <label for="orientation">Display Orientation:</label><br />
+      <select name="orientation" id="orientation" onchange="setOrientation()">
+        <option value="0">Portrait (240x320)</option>
+        <option value="1">Landscape (320x240)</option>
+      </select>
+      <div class="orientation-info">
+        Choose how the GIF should be displayed on the LCD screen
+      </div>
+    </div>
+
+    <div class="card">
+      <form method="POST" action="/upload" enctype="multipart/form-data">
+        <input type="file" name="upload" accept=".gif" /><br />
+        <button type="submit">Upload & Switch</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Current Settings</h3>
+      <p>
+        Current Orientation: <span id="current-orientation">Loading...</span>
+      </p>
+      <p>
+        Connect to Wi-Fi <b>{{AP_SSID}}</b> (password
+        <code>{{AP_PASSWORD}}</code>) and open <code>http://{{AP_IP}}</code>.
+      </p>
+    </div>
+
+    <script>
+      // function to set orientation
+      function setOrientation() {
+        const orientation = document.getElementById("orientation").value;
+        fetch("/orientation", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: "orientation=" + orientation,
+        })
+          .then((response) => response.text())
+          .then((result) => {
+            console.log("Orientation set:", result);
+            updateCurrentOrientation();
+          })
+          .catch((err) => console.log("Failed to set orientation:", err));
+      }
+
+      // function to update current orientation display
+      function updateCurrentOrientation() {
+        const orientation = document.getElementById("orientation").value;
+        document.getElementById("current-orientation").textContent =
+          orientation === "0" ? "Portrait (240x320)" : "Landscape (320x240)";
+      }
+
+      // Load current orientation
+      fetch("/orientation")
+        .then((response) => response.text())
+        .then((orientation) => {
+          document.getElementById("orientation").value = orientation;
+          updateCurrentOrientation();
+        })
+        .catch((err) => console.log("Failed to load orientation:", err));
+    </script>
+  </body>
+</html>
